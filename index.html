@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tier System</title>
+  <style>
+    body { background:#0b0f19; color:white; text-align:center; font-family:Arial; }
+    input, button, select { padding:10px; margin:5px; border-radius:10px; border:none; }
+    .box { background:#111827; margin:10px; padding:15px; border-radius:15px; }
+    .ht { background:red; }
+    .lt { background:blue; }
+    .accept { background:green; }
+  </style>
+</head>
+
+<body>
+
+<h1>Tier Test System</h1>
+
+<div class="box">
+  <h2>Submit Request</h2>
+  <input id="reqName" placeholder="Player Name">
+  <button onclick="submitReq()">Submit</button>
+
+  <h3>Requests</h3>
+  <ul id="reqList"></ul>
+</div>
+
+<div class="box">
+  <h2>Tester Panel</h2>
+
+  <input id="pName" placeholder="Player Name">
+  <input id="pElo" placeholder="Elo">
+
+  <select id="mode">
+    <option>TierTest</option>
+    <option>Combat Master</option>
+    <option>Combat Ace</option>
+  </select>
+
+  <br>
+  <button class="ht" onclick="addPlayer('HT')">HT</button>
+  <button class="lt" onclick="addPlayer('LT')">LT</button>
+</div>
+
+<div class="box">
+  <h2>Leaderboard</h2>
+  <ul id="board"></ul>
+</div>
+
+<script>
+let requests = JSON.parse(localStorage.getItem("requests")) || [];
+let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+
+function save() {
+  localStorage.setItem("requests", JSON.stringify(requests));
+  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+}
+
+function submitReq() {
+  let name = document.getElementById("reqName").value;
+  if (!name) return alert("Enter name");
+
+  requests.push(name);
+  save();
+  renderReq();
+}
+
+function renderReq() {
+  let list = document.getElementById("reqList");
+  list.innerHTML = "";
+
+  requests.forEach((n, i) => {
+    let li = document.createElement("li");
+    li.innerHTML = n + ' <button class="accept" onclick="accept(' + i + ')">Accept</button>';
+    list.appendChild(li);
+  });
+}
+
+function accept(i) {
+  let name = requests[i];
+  document.getElementById("pName").value = name;
+  requests.splice(i,1);
+  save();
+  renderReq();
+}
+
+function addPlayer(tier) {
+  let name = document.getElementById("pName").value;
+  let elo = document.getElementById("pElo").value;
+  let mode = document.getElementById("mode").value;
+
+  if (!name || !elo) return alert("Fill all");
+
+  leaderboard.push({name, tier, elo, mode});
+  save();
+  renderBoard();
+}
+
+function renderBoard() {
+  let list = document.getElementById("board");
+  list.innerHTML = "";
+
+  leaderboard
+    .sort((a,b)=>b.elo-a.elo)
+    .forEach(p => {
+      let li = document.createElement("li");
+      li.textContent = `${p.name} - ${p.tier} - ${p.mode} - Elo: ${p.elo}`;
+      list.appendChild(li);
+    });
+}
+
+renderReq();
+renderBoard();
+</script>
+
+</body>
+</html>
